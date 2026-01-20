@@ -1,61 +1,71 @@
-## Features
+Global Profile Lookup: Fetch a user's global details like ID, bot status, creation date, avatar, and banner.
+Server Profile Lookup: Retrieve server-specific info such as join date, roles, and avatar for members in the current guild.
+Interactive Panel: Use the /panel slash command to select between global or server lookups via a dropdown and modal input.
+Prefix Commands: Fallback support for text-based commands like .lookup <user_id> (global) and .lookupserver <user_id> (server-specific).
+Caching: In-memory caching with a 60-second TTL to minimize redundant Discord API requests.
+Ephemeral Responses: Slash interactions are private by default for user privacy.
+Optional Database: Configurable MongoDB connection for potential future expansions (e.g., logging lookups), but not required.
 
-* **Global Profile Lookup**: Fetch detailed user profiles, including user ID, bot status, account creation date, avatar, and banner.
-* **Server Profile Lookup**: View member-specific details within a guild, including roles, join date, and avatar.
-* **Interactive Lookup Panel**: Use the `/panel` command to choose between a global or server-specific lookup via a dropdown, followed by modal input for user IDs.
-* **Prefix Commands**: Support for legacy commands like `.lookup <user_id>` for global lookups and `.lookupserver <user_id>` for server-based lookups.
-* **Efficient Caching**: In-memory caching with a time-to-live (TTL) of 60 seconds to reduce redundant API calls and enhance performance.
-* **Ephemeral Responses**: Ensures privacy by delivering all interactions as ephemeral messages.
-* **Optional Database Integration**: MongoDB support for persistent storage (disabled by default), allowing for enhanced functionality when enabled.
+Prerequisites
 
-## Requirements
+Node.js v18 or higher
+A Discord developer account to create a bot application.
+Basic familiarity with environment variables and Discord bot permissions (e.g., GUILD_MEMBERS intent).
 
-* **Node.js v18+** (LTS recommended for stability).
-* **Discord Bot Token** and **Client ID** (set up in the `.env` file).
-* Access to a Discord application with required intents: **Guilds**, **GuildMembers**, **GuildMessages**, and **MessageContent**.
+Installation
+Start by setting up a new project directory on your local machine or server.
 
-## Installation
+Initialize a new Node.js project: npm init -y
+Install the required dependencies one by one 
+npm install discord.js
+npm install dotenv
+npm install mongodb
 
-1. Install dependencies:
+This approach lets you manage versions explicitly if needed, though you could bundle them in a single npm install command for convenience.
+Configuration
 
-   ```bash
-   npm install discord.js dotenv mongodb
-   ```
+Create a .env file in the root directory and populate it with your bot's credentials:textBOT_TOKEN=your_discord_bot_token_here
+CLIENT_ID=your_discord_application_client_id_here
+DATABASE_URI=your_mongodb_connection_string_here  # Optional; leave blank if not using DB
+Obtain BOT_TOKEN and CLIENT_ID from the Discord Developer Portal.
+For DATABASE_URI, use a MongoDB Atlas connection string or similar if enabling the database.
 
-2. Configure your environment variables in `.env`:
+Edit config.js to customize settings:
+PREFIX: Default is ., but change it to avoid conflicts with other bots.
+DATABASE.ENABLED: Set to true if you want MongoDB integration (requires DATABASE_URI in .env).
+DATABASE.URI: Leave as an empty string if not using.
 
-   * Add your **Discord Bot Token** and **Client ID**.
-   * Set up the **MongoDB URI** if you plan to use the database (optional).
 
-3. Update the `config.js` file as needed for bot prefix or MongoDB URI configuration.
+Ensure your bot has the necessary intents enabled in the Developer Portal: Guilds, GuildMembers, GuildMessages, and MessageContent.
+Running the Bot
 
-## Usage
+Start the bot with:textnode index.js
+Once online, the bot will log READY <bot_tag> to the console and set its presence to "Watching github.com/901wia".
+Invite the bot to your server using an OAuth2 URL generated in the Developer Portal (include scopes like bot and applications.commands).
 
-1. Start the bot:
+Usage
+Slash Commands
 
-   ```bash
-   node index.js
-   ```
+/panel: Opens an interactive panel (ephemeral). Select "Global Profile" or "Server Profile," then enter a user ID or mention in the modal.
+Works globally for global lookups; server lookups require execution in a guild.
 
-2. Invite the bot to your Discord server with the following permissions:
 
-   * **Read Messages**
-   * **Send Messages**
-   * **Embed Links**
+Prefix Commands
 
-3. Interaction Methods:
+.lookup <user_id_or_mention>: Global profile lookup (public response).
+.lookupserver <user_id_or_mention>: Server profile lookup (public; must be run in a guild).
 
-   * **Slash Command**: Use `/panel` to open an interactive dropdown for selecting the lookup type.
-   * **Prefix Commands**:
+User IDs can be extracted from mentions (e.g., @user) or provided directly. The bot handles invalid inputs gracefully with error messages.
+Development Notes
 
-     * `.lookup <user_id>` for global lookups.
-     * `.lookupserver <user_id>` for guild-specific lookups.
+Error Handling: Interactions include try-catch blocks to prevent crashes, with fallback ephemeral replies.
+Caching: Uses a simple Map with TTL for efficiency; expand as needed for production.
+Extensibility: The modular structure (e.g., separate handlers in commands.js and interactionHandler.js) makes it easy to add more commands or components.
+Database: Currently unused but wired up—access via getDB() in database.js for custom features like storing lookup history.
 
-> **Note:** Global lookups can be performed anywhere, while server-based lookups require the bot to be in the server.
+If scaling, consider adding rate limiting or migrating to a more robust cache like Redis.
+Troubleshooting
 
-## Development Notes
-
-* **Error Handling**: The bot gracefully handles errors, replying with helpful messages for invalid input or API errors. All error responses are ephemeral to maintain privacy.
-* **Modular Design**: The bot's functionality is organized into distinct handlers for slash commands, select menus, modals, and prefix commands, making it easy to extend and maintain.
-* **Caching**: A 60-second time-to-live (TTL) is applied to cached data, balancing performance with data freshness.
-* **Database Integration**: Enable MongoDB support in `config.js` to allow for persistent storage. Connection pooling is used for efficient database interactions when enabled.
+Bot Not Responding: Check intents, token validity, and console logs for errors.
+MongoDB Issues: Ensure the URI is correct and the cluster allows your IP; disable in config if not needed.
+Permission Errors: The bot needs View Members permissions for guild lookups.
