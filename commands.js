@@ -32,7 +32,7 @@ function setCache(k, d) {
 const commands = [
     new SlashCommandBuilder()
         .setName("panel")
-        .setDescription("Advanced user lookup panel")
+        .setDescription("Discord lookup panel")
         .toJSON()
 ];
 
